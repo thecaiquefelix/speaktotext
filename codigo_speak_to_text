@@ -1,0 +1,65 @@
+#include <SoftwareSerial.h>             //Inclui a biblioteca da porta serial
+#include <LiquidCrystal.h>              //Inclui a biblioteca do LCD
+
+//----------------------------------------------------------------------------------------------------------------//
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);  //Configura os pinos do Arduino para se comunicar com o LCD
+
+String device;                          //Cria a variavel que irá armazenar os comandos de voz
+int tam, cont = 15;                     //Cria as variaveis que irão deslizar os textos no LCD
+
+void setup() {
+
+  Serial.begin(9600);                   //Inicia a leitura na porta serial
+  lcd.begin(16, 1);                     //Inicia o LCD com dimensões 16x2(Colunas x Linhas)
+  lcd.setCursor(0, 0);                  //Posiciona o cursor na primeira coluna(0) e na primeira linha(0) do LCD
+  lcd.print("Ola aluno!");              //Escreve no LCD "Ola aluno!"
+  delay(3000);                          //Aguarda 3 segundos
+}
+//----------------------------------------------------------------------------------------------------------------//
+void loop() {
+
+  if ( device.length() == 0 ) {         //Se nao houver nada para exibir então faça
+    lcd.setCursor(0, 0);                //Posiciona o cursor na primeira coluna(0) e na linha(0) do LCD
+    lcd.print("  Aguardando ...");      //Escreve no LCD "Aguardando ..."
+  }
+
+  while (Serial.available()) {          //Averigua se há byte avaliavel para leitura
+
+    
+    delay(10);                          //Adiciona um delay para manter a leitura mais estavel
+    char c = Serial.read();             //Conduz a leitura da serial para a variavel c
+    device += c;                        //Cria a string
+  }
+
+  if ( device.length() > 0 ) {          //SE o comprimento da varialvel DEVICE for maior que 0 faça    
+    lcd.clear();                        //Limpa o dsiplay
+    
+    if ( device.length() < 15 ) {       //SE o comprimento da varialvel DEVICE for menor que 15 faça
+      tam = 15;                         //A variavel tam agora é 15
+
+      for ( tam; tam >= 0; tam --) {    //Ciclo de repetição para deslizar os textos
+        lcd.clear();                    //Limpa o dsiplay
+        lcd.setCursor(cont, 0);         //Posiciona o cursor na coluna(cont) e na linha(0) do LCD
+        lcd.print(device);              //Exibe o conteudo da variavel DEVICE
+        delay(200);                     //Aguarda 200 milisegundos
+        cont--;                         //Subtrai 1 da variavel cont
+      }
+      lcd.clear();                      //Limpa o dsiplay
+      device = "";                      //Limpa a variavel DEVICE
+      cont = 15;                        //Reseta a variavel cont
+    }
+    if ( device.length() > 15 ) {       //Verifica se o comprinto da DEVICE é maior do que 15
+      tam = device.length();            //A variavel tam vai ser igual o comprimento da palavra dita
+      lcd.setCursor(15, 0);             //Posiciona o cursor na coluna(15) e na linha(0) do LCD
+      lcd.print(device);                //Exibe o conteudo da variavel DEVICE
+
+      for ( tam; tam >= 0; tam --) {    //Ciclo de repetição para deslizar os textos
+        lcd.scrollDisplayLeft();        //Desliza os textos do display para a esquerda
+        delay(200);                     //Aguarda 200 milisegundos
+      }
+      lcd.clear();                      //Limpa o dsiplay
+      device = "";                      //Limpa a variavel DEVICE
+    }
+  }
+}
+//----------------------------------------------------------------------------------------------------------------//
